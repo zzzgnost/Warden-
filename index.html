@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WARDEN</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --navy: #0b0f1a;
+  --navy2: #0e1420;
+  --navy3: #141b2d;
+  --cyan: #00d4ff;
+  --cyan2: #00a8cc;
+  --gold: #c9a84c;
+  --gold2: #e8c56a;
+  --gold3: #f5d98a;
+  --white: #e8eaf0;
+  --muted: #4a5568;
+  --muted2: #2d3748;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--navy);color:var(--white);font-family:'Rajdhani',sans-serif;overflow-x:hidden;cursor:crosshair;}
+a{text-decoration:none;color:inherit;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--navy);}
+::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
+
+/* GRAIN OVERLAY */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:0.35;
+}
+
+/* GRID BG */
+.grid-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:16px 24px;display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(to bottom, rgba(11,15,26,0.95), transparent);
+  backdrop-filter:blur(4px);
+}
+.nav-logo{font-family:'Orbitron',monospace;font-size:14px;font-weight:900;letter-spacing:4px;color:var(--gold);text-transform:uppercase;}
+.nav-links{display:flex;gap:24px;}
+.nav-links a{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);transition:color 0.2s;font-family:'JetBrains Mono',monospace;}
+.nav-links a:hover{color:var(--cyan);}
+
+/* SECTIONS */
+section{position:relative;z-index:1;}
+
+/* HERO */
+#hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:100px 24px 60px;text-align:center;
+  overflow:hidden;
+}
+.hero-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(ellipse, rgba(0,212,255,0.06) 0%, rgba(201,168,76,0.04) 40%, transparent 70%);
+  pointer-events:none;
+}
+
+/* HEXAGON LOGO SVG */
+.hex-wrap{position:relative;margin-bottom:32px;animation:floatHex 4s ease-in-out infinite;}
+@keyframes floatHex{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+
+.hex-ring{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:160px;height:160px;
+  border:1px solid rgba(0,212,255,0.15);
+  clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  animation:ringPulse 3s ease-in-out infinite;
+}
+@keyframes ringPulse{0%,100%{opacity:0.3;}50%{opacity:0.7;}}
+
+.title-block{margin-bottom:16px;}
+.pre-title{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--cyan);letter-spacing:4px;text-transform:uppercase;
+  margin-bottom:12px;opacity:0;animation:fadeUp 0.6s ease 0.3s forwards;
+}
+h1.name{
+  font-family:'Orbitron',monospace;font-size:clamp(52px,12vw,96px);
+  font-weight:900;letter-spacing:8px;line-height:1;
+  background:linear-gradient(135deg, var(--gold3) 0%, var(--gold) 40%, var(--cyan) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:0;animation:fadeUp 0.6s ease 0.5s forwards;
+}
+.tagline{
+  font-size:14px;letter-spacing:3px;color:var(--muted);
+  text-transform:uppercase;margin-top:12px;font-family:'JetBrains Mono',monospace;
+  opacity:0;animation:fadeUp 0.6s ease 0.7s forwards;
+}
+.tagline span{color:var(--gold);}
+
+.hero-badges{
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+  margin-top:28px;opacity:0;animation:fadeUp 0.6s ease 0.9s forwards;
+}
+.badge{
+  padding:5px 14px;border:1px solid;border-radius:2px;
+  font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  font-family:'JetBrains Mono',monospace;
+}
+.badge-cyan{border-color:rgba(0,212,255,0.4);color:var(--cyan);background:rgba(0,212,255,0.06);}
+.badge-gold{border-color:rgba(201,168,76,0.4);color:var(--gold);background:rgba(201,168,76,0.06);}
+
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  font-size:10px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace;
+  animation:fadeUp 0.6s ease 1.2s forwards, blink 2s ease 1.2s infinite;opacity:0;
+}
+@keyframes blink{0%,100%{opacity:0.4;}50%{opacity:1;}}
+
+/* DIVIDER */
+.divider{
+  height:1px;background:linear-gradient(to right, transparent, var(--gold), var(--cyan), transparent);
+  margin:0 24px;opacity:0.2;
+}
+
+/* ABOUT */
+#about{padding:80px 24px;}
+.section-header{
+  display:flex;align-items:center;gap:16px;margin-bottom:48px;
+}
+.section-num{
+  font-family:'Orbitron',monospace;font-size:11px;color:var(--cyan);
+  letter-spacing:2px;opacity:0.5;
+}
+.section-title{
+  font-family:'Orbitron',monospace;font-size:18px;font-weight:700;
+  letter-spacing:4px;text-transform:uppercase;color:var(--white);
+}
+.section-line{flex:1;height:1px;background:linear-gradient(to right,var(--muted2),transparent);}
+
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px;margin:0 auto;}
+.about-card{
+  background:var(--navy3);border:1px solid var(--muted2);
+  border-radius:4px;padding:20px;position:relative;overflow:hidden;
+  transition:border-color 0.3s,transform 0.3s;
+}
+.about-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(to right,transparent,var(--gold),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.about-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+.about-card:hover::before{opacity:1;}
+.about-card-icon{font-size:20px;margin-bottom:8px;}
+.about-card-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:4px;}
+.about-card-val{font-size:15px;font-weight:600;color:var(--white);letter-spacing:1px;}
+
+/* LINKS */
+#links{padding:80px 24px;}
+.links-list{display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto;}
+.link-item{
+  display:flex;align-items:center;gap:16px;
+  background:var(--navy3);border:1px solid var(--muted2);
+  border-radius:4px;padding:16px 20px;
+  transition:all 0.25s;position:relative;overflow:hidden;cursor:pointer;
+}
+.link-item::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,212,255,0.04),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.link-item:hover{border-color:var(--cyan);transform:translateX(4px);}
+.link-item:hover::after{opacity:1;}
+.link-icon{
+  width:36px;height:36px;border-radius:2px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;border:1px solid var(--muted2);background:var(--navy2);
+}
+.link-text{flex:1;}
+.link-name{font-size:14px;font-weight:600;letter-spacing:1px;color:var(--white);}
+.link-desc{font-size:11px;color:var(--muted);letter-spacing:1px;font-family:'JetBrains Mono',monospace;margin-top:2px;}
+.link-arrow{font-size:14px;color:var(--cyan);opacity:0;transition:opacity 0.2s,transform 0.2s;transform:translateX(-4px);}
+.link-item:hover .link-arrow{opacity:1;transform:translateX(0);}
+
+/* BRAND */
+#brand{padding:80px 24px 100px;}
+.brand-inner{max-width:600px;margin:0 auto;}
+
+/* Colors */
+.brand-sub{font-size:11px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:16px;}
+.colors-row{display:flex;gap:10px;margin-bottom:40px;flex-wrap:wrap;}
+.color-swatch{
+  flex:1;min-width:80px;border-radius:4px;overflow:hidden;
+  border:1px solid var(--muted2);transition:transform 0.2s;cursor:pointer;
+}
+.color-swatch:hover{transform:scaleY(1.05);}
+.swatch-block{height:56px;}
+.swatch-info{background:var(--navy3);padding:8px 10px;}
+.swatch-name{font-size:10px;color:var(--white);letter-spacing:1px;font-weight:600;}
+.swatch-hex{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+
+/* Typography */
+.type-row{display:flex;flex-direction:column;gap:12px;margin-bottom:40px;}
+.type-card{
+  background:var(--navy3);border:1px solid var(--muted2);border-radius:4px;padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.type-sample-orb{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--gold);}
+.type-sample-raj{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:600;color:var(--white);}
+.type-sample-jet{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--cyan);}
+.type-meta{text-align:right;}
+.type-name{font-size:11px;color:var(--white);letter-spacing:1px;}
+.type-use{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+
+/* Logo variants */
+.logo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.logo-card{
+  background:var(--navy3);border:1px solid var(--muted2);border-radius:4px;
+  padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;
+  transition:border-color 0.3s;
+}
+.logo-card:hover{border-color:var(--gold);}
+.logo-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;}
+
+/* FOOTER */
+footer{
+  position:relative;z-index:1;text-align:center;padding:32px 24px;
+  border-top:1px solid var(--muted2);
+}
+.footer-text{font-size:10px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace;}
+.footer-text span{color:var(--gold);}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes scanline{0%{top:-10%;}100%{top:110%;}}
+
+/* SCANLINE */
+.scanline{
+  position:fixed;top:0;left:0;right:0;height:2px;pointer-events:none;z-index:9998;
+  background:linear-gradient(to right,transparent,rgba(0,212,255,0.08),transparent);
+  animation:scanline 8s linear infinite;
+}
+
+/* CORNER DECORATIONS */
+.corner{position:absolute;width:16px;height:16px;}
+.corner-tl{top:0;left:0;border-top:1px solid var(--gold);border-left:1px solid var(--gold);}
+.corner-tr{top:0;right:0;border-top:1px solid var(--gold);border-right:1px solid var(--gold);}
+.corner-bl{bottom:0;left:0;border-bottom:1px solid var(--gold);border-left:1px solid var(--gold);}
+.corner-br{bottom:0;right:0;border-bottom:1px solid var(--gold);border-right:1px solid var(--gold);}
+
+/* ROLE TAGS */
+.role-tag{padding:6px 14px;border-radius:3px;font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;border:1px solid;transition:transform 0.2s;}
+.role-tag:hover{transform:translateY(-2px);}
+.role-mod{background:rgba(88,101,242,0.1);border-color:rgba(88,101,242,0.4);color:#8b9cf5;}
+.role-create{background:rgba(255,105,180,0.1);border-color:rgba(255,105,180,0.4);color:#ff8ec8;}
+.role-special{background:rgba(201,168,76,0.08);border-color:rgba(201,168,76,0.3);color:var(--gold);}
+.role-community{background:rgba(35,165,90,0.1);border-color:rgba(35,165,90,0.4);color:#4ade80;}
+.role-og{background:rgba(245,217,138,0.1);border-color:rgba(245,217,138,0.4);color:var(--gold3);}
+.role-beta{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15);color:#9ca3af;}
+
+/* RESPONSIVE */
+@media(max-width:480px){
+  .about-grid{grid-template-columns:1fr 1fr;}
+  .logo-grid{grid-template-columns:1fr 1fr;}
+  .nav-links{display:none;}
+  h1.name{letter-spacing:4px;}
+}
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">W</div>
+  <div class="nav-links">
+    <a href="#about">Identity</a>
+    <a href="#links">Links</a>
+    <a href="#roles">Roles</a>
+    <a href="#brand">Brand</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow"></div>
+
+  <!-- Animated Hex Logo -->
+  <div class="hex-wrap">
+    <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Outer hex -->
+      <polygon points="60,4 112,32 112,88 60,116 8,88 8,32"
+        fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.8"/>
+      <!-- Inner hex -->
+      <polygon points="60,18 96,38 96,78 60,98 24,78 24,38"
+        fill="#0e1420" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+      <!-- Eye shape -->
+      <ellipse cx="60" cy="58" rx="22" ry="14" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Pupil diamond -->
+      <polygon points="60,48 68,58 60,68 52,58" fill="#00d4ff" opacity="0.9"/>
+      <polygon points="60,51 65,58 60,65 55,58" fill="#0e1420"/>
+      <circle cx="60" cy="58" r="3" fill="#c9a84c"/>
+      <!-- Gold split line -->
+      <line x1="8" y1="58" x2="112" y2="58" stroke="#c9a84c" stroke-width="0.5" opacity="0.4"/>
+      <!-- Corner marks -->
+      <line x1="60" y1="4" x2="60" y2="14" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+      <line x1="60" y1="106" x2="60" y2="116" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+    </svg>
+    <div class="hex-ring"></div>
+  </div>
+
+  <div class="title-block">
+    <div class="pre-title">// identity module loaded</div>
+    <h1 class="name">WARDEN</h1>
+    <div class="tagline">Web3 Content · <span>Solana</span> · Brand Ops</div>
+  </div>
+
+  <div style="max-width:420px;margin:20px auto 0;opacity:0;animation:fadeUp 0.6s ease 0.85s forwards;">
+    <div style="border-left:2px solid var(--gold);padding:10px 16px;text-align:left;">
+      <div style="font-size:13px;color:#8a9ab5;font-family:'JetBrains Mono',monospace;line-height:1.7;font-style:italic;">"If you fall in love with Flower and not with the roots you'll be disappointed in the Autumn 🍁"</div>
+    </div>
+  </div>
+
+  <div class="hero-badges">
+    <div class="badge badge-cyan">Content Creator</div>
+    <div class="badge badge-gold">Community Mod</div>
+    <div class="badge badge-cyan">Social Media</div>
+    <div class="badge badge-gold">Web3 Native</div>
+  </div>
+
+  <div class="scroll-hint">↓ scroll ↓</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-header" style="max-width:600px;margin:0 auto 48px;">
+    <div class="section-num">01</div>
+    <div class="section-title">Identity</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="about-grid">
+    <div class="about-card">
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+      <div class="about-card-icon">🍩</div>
+      <div class="about-card-label">Current Role</div>
+      <div class="about-card-val">DonutAI</div>
+    </div>
+    <div class="about-card">
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+      <div class="about-card-icon">🪐</div>
+      <div class="about-card-label">Ecosystem</div>
+      <div class="about-card-val">Solana</div>
+    </div>
+    <div class="about-card">
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+      <div class="about-card-icon">🎨</div>
+      <div class="about-card-label">Focus</div>
+      <div class="about-card-val">Content & Brand</div>
+    </div>
+    <div class="about-card">
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+      <div class="about-card-icon">⚔️</div>
+      <div class="about-card-label">Handle</div>
+      <div class="about-card-val">WARDEN</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- LINKS -->
+<section id="links">
+  <div class="section-header" style="max-width:480px;margin:0 auto 48px;">
+    <div class="section-num">02</div>
+    <div class="section-title">Links</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="links-list">
+
+    <a href="https://twitter.com/zzzgnost" target="_blank" class="link-item">
+      <div class="link-icon">𝕏</div>
+      <div class="link-text">
+        <div class="link-name">Twitter / X</div>
+        <div class="link-desc">@warden — updates & alpha</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+    <a href="https://donutbrowser.ai" target="_blank" class="link-item">
+      <div class="link-icon">🍩</div>
+      <div class="link-text">
+        <div class="link-name">DonutAI</div>
+        <div class="link-desc">donutbrowser.ai — agentic crypto browser</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+    <a href="https://discord.com/" target="_blank" class="link-item">
+      <div class="link-icon">💬</div>
+      <div class="link-text">
+        <div class="link-name">Discord</div>
+        <div class="link-desc">community moderation & ops</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DONUT ROLES -->
+<section id="roles" style="padding:80px 24px;">
+  <div class="section-header" style="max-width:600px;margin:0 auto 48px;">
+    <div class="section-num">03</div>
+    <div class="section-title">DonutAI Roles</div>
+    <div class="section-line"></div>
+  </div>
+  <div style="max-width:600px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding:14px 20px;background:var(--navy3);border:1px solid var(--muted2);border-radius:4px;">
+      <div style="font-size:20px;">🍩</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--white);letter-spacing:1px;">DonutAI Discord</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;">Member since May 31, 2025</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <div class="role-tag role-mod">🔵 Mini Sprinkle Mod</div>
+      <div class="role-tag role-mod">🟣 Sprinkle MC 🎙</div>
+      <div class="role-tag role-create">🩷 Content Creator/Artist</div>
+      <div class="role-tag role-special">🩷 Unicorn Donut</div>
+      <div class="role-tag role-special">🔵 Sprinkled Donut</div>
+      <div class="role-tag role-special">🔴 Glazed Donut</div>
+      <div class="role-tag role-special">🟢 Plain Donut</div>
+      <div class="role-tag role-community">🟢 Donut Fam</div>
+      <div class="role-tag role-og">🟡 OG Glazer</div>
+      <div class="role-tag role-beta">⚪ Beta Tester</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BRAND -->
+<section id="brand">
+  <div class="section-header" style="max-width:600px;margin:0 auto 48px;">
+    <div class="section-num">04</div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="brand-inner">
+
+    <!-- Colors -->
+    <div class="brand-sub">// Color System</div>
+    <div class="colors-row">
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#0b0f1a;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Navy</div>
+          <div class="swatch-hex">#0B0F1A</div>
+        </div>
+      </div>
+      <div class="color-swatch">
+        <div class="swatch-block" style="background:#00d4ff;"></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Cyan</div>
+          <div class="swatch-hex">#00D4FF</div>
+        </div>
+      </div>
+      <div class="color-swatch">
+        <div class="
